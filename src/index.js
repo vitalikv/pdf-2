@@ -6,11 +6,12 @@ import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { PanelUI } from './panelUI';
 
 import { IsometricPdfToSvg } from './pdfToSvg';
+import { PdfEditor } from './pdfEditor';
 
 let renderer, camera, controls, labelRenderer;
 export let scene, mapControlInit, container;
 
-export let isometricPdfToSvg;
+export let isometricPdfToSvg, pdfEditor;
 
 init();
 render();
@@ -90,7 +91,9 @@ function initStart() {
   const panelUI = new PanelUI();
   panelUI.init();
 
-  isometricPdfToSvg = new IsometricPdfToSvg();
+  //isometricPdfToSvg = new IsometricPdfToSvg();
+
+  pdfEditor = new PdfEditor();
 }
 
 function render() {

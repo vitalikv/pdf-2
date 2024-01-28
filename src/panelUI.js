@@ -43,7 +43,7 @@ export class PanelUI {
     let ind = 0;
 
     this.btns$[ind].onmousedown = () => {
-      isometricPdfToSvg.inputFile.click();
+      //isometricPdfToSvg.inputFile.click();
     };
     ind++;
 
