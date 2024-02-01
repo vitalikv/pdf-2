@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@types/pdfjs-dist": "^2.10.378",
+    "es-module-shims": "^1.8.2",
     "jspdf": "^2.5.1",
     "pdfjs-dist": "^3.9.179",
     "svg2pdf.js": "^2.2.1",

@@ -18,7 +18,14 @@ module.exports = {
       filename: 'index.html',
     }),
     new CopyPlugin({
-      patterns: [{ from: './src/img', to: './img' }],
+      patterns: [
+        { from: './src/img', to: './img' },
+        { from: './web', to: './web' },
+        { from: './src/images', to: './images' },
+        { from: './src', to: './src' },
+        { from: './external', to: './external' },
+        { from: './web/locale/*', to: './web/locale/*' },
+      ],
     }),
   ],
   module: {

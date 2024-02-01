@@ -19,7 +19,7 @@ initStart();
 
 function init() {
   const div = document.createElement('div');
-  div.innerHTML = `<div style="position: fixed; top: 70px; bottom:0; left: 0; right: 0;"></div>`;
+  div.innerHTML = `<div style="position: fixed; top: 70px; bottom:0; left: 0; right: 0; display: none;"></div>`;
   container = div.children[0];
   document.body.append(container);
 
