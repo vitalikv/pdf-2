@@ -15,25 +15,22 @@
 
 /** @typedef {import("./interfaces").IDownloadManager} IDownloadManager */
 
-import { createValidAbsoluteUrl, isPdfFile } from "pdfjs-lib";
+import { createValidAbsoluteUrl, isPdfFile } from '../src/pdf.js';
 
-if (typeof PDFJSDev !== "undefined" && !PDFJSDev.test("CHROME || GENERIC")) {
-  throw new Error(
-    'Module "pdfjs-web/download_manager" shall not be used ' +
-      "outside CHROME and GENERIC builds."
-  );
+if (typeof PDFJSDev !== 'undefined' && !PDFJSDev.test('CHROME || GENERIC')) {
+  throw new Error('Module "pdfjs-web/download_manager" shall not be used ' + 'outside CHROME and GENERIC builds.');
 }
 
 function download(blobUrl, filename) {
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   if (!a.click) {
     throw new Error('DownloadManager: "a.click()" is not supported.');
   }
   a.href = blobUrl;
-  a.target = "_parent";
+  a.target = '_parent';
   // Use a.download if available. This increases the likelihood that
   // the file is downloaded instead of opened by another PDF plugin.
-  if ("download" in a) {
+  if ('download' in a) {
     a.download = filename;
   }
   // <a> must be in the document for recent Firefox versions,
@@ -50,17 +47,15 @@ class DownloadManager {
   #openBlobUrls = new WeakMap();
 
   downloadUrl(url, filename, _options) {
-    if (!createValidAbsoluteUrl(url, "http://example.com")) {
+    if (!createValidAbsoluteUrl(url, 'http://example.com')) {
       console.error(`downloadUrl - not a valid URL: ${url}`);
       return; // restricted/invalid URL
     }
-    download(url + "#pdfjs.action=download", filename);
+    download(url + '#pdfjs.action=download', filename);
   }
 
   downloadData(data, filename, contentType) {
-    const blobUrl = URL.createObjectURL(
-      new Blob([data], { type: contentType })
-    );
+    const blobUrl = URL.createObjectURL(new Blob([data], { type: contentType }));
     download(blobUrl, filename);
   }
 
@@ -69,29 +64,24 @@ class DownloadManager {
    */
   openOrDownloadData(element, data, filename) {
     const isPdfData = isPdfFile(filename);
-    const contentType = isPdfData ? "application/pdf" : "";
+    const contentType = isPdfData ? 'application/pdf' : '';
 
-    if (
-      (typeof PDFJSDev === "undefined" || !PDFJSDev.test("COMPONENTS")) &&
-      isPdfData
-    ) {
+    if ((typeof PDFJSDev === 'undefined' || !PDFJSDev.test('COMPONENTS')) && isPdfData) {
       let blobUrl = this.#openBlobUrls.get(element);
       if (!blobUrl) {
         blobUrl = URL.createObjectURL(new Blob([data], { type: contentType }));
         this.#openBlobUrls.set(element, blobUrl);
       }
       let viewerUrl;
-      if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
+      if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC')) {
         // The current URL is the viewer, let's use it and append the file.
-        viewerUrl = "?file=" + encodeURIComponent(blobUrl + "#" + filename);
-      } else if (PDFJSDev.test("CHROME")) {
+        viewerUrl = '?file=' + encodeURIComponent(blobUrl + '#' + filename);
+      } else if (PDFJSDev.test('CHROME')) {
         // In the Chrome extension, the URL is rewritten using the history API
         // in viewer.js, so an absolute URL must be generated.
         viewerUrl =
           // eslint-disable-next-line no-undef
-          chrome.runtime.getURL("/content/web/viewer.html") +
-          "?file=" +
-          encodeURIComponent(blobUrl + "#" + filename);
+          chrome.runtime.getURL('/content/web/viewer.html') + '?file=' + encodeURIComponent(blobUrl + '#' + filename);
       }
 
       try {

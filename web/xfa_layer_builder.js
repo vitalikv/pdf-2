@@ -18,7 +18,7 @@
 /** @typedef {import("../src/display/display_utils").PageViewport} PageViewport */
 /** @typedef {import("./interfaces").IPDFLinkService} IPDFLinkService */
 
-import { XfaLayer } from "pdfjs-lib";
+import { XfaLayer } from '../src/pdf.js';
 
 /**
  * @typedef {Object} XfaLayerBuilderOptions
@@ -33,13 +33,7 @@ class XfaLayerBuilder {
   /**
    * @param {XfaLayerBuilderOptions} options
    */
-  constructor({
-    pageDiv,
-    pdfPage,
-    annotationStorage = null,
-    linkService,
-    xfaHtml = null,
-  }) {
+  constructor({ pageDiv, pdfPage, annotationStorage = null, linkService, xfaHtml = null }) {
     this.pageDiv = pageDiv;
     this.pdfPage = pdfPage;
     this.annotationStorage = annotationStorage;
@@ -57,8 +51,8 @@ class XfaLayerBuilder {
    *   of the XFA layer is complete. The first rendering will return an object
    *   with a `textDivs` property that can be used with the TextHighlighter.
    */
-  async render(viewport, intent = "display") {
-    if (intent === "print") {
+  async render(viewport, intent = 'display') {
+    if (intent === 'print') {
       const parameters = {
         viewport: viewport.clone({ dontFlip: true }),
         div: this.div,
@@ -69,7 +63,7 @@ class XfaLayerBuilder {
       };
 
       // Create an xfa layer div and render the form
-      const div = document.createElement("div");
+      const div = document.createElement('div');
       this.pageDiv.append(div);
       parameters.div = div;
 
@@ -95,7 +89,7 @@ class XfaLayerBuilder {
       return XfaLayer.update(parameters);
     }
     // Create an xfa layer div and render the form
-    this.div = document.createElement("div");
+    this.div = document.createElement('div');
     this.pageDiv.append(this.div);
     parameters.div = this.div;
 

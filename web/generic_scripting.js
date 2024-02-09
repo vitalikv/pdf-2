@@ -13,14 +13,13 @@
  * limitations under the License.
  */
 
-import { getPdfFilenameFromUrl, loadScript } from "pdfjs-lib";
+import { getPdfFilenameFromUrl, loadScript } from '../src/pdf.js';
 
 async function docProperties(pdfDocument) {
-  const url = "",
-    baseUrl = url.split("#")[0];
+  const url = '',
+    baseUrl = url.split('#')[0];
   // eslint-disable-next-line prefer-const
-  let { info, metadata, contentDispositionFilename, contentLength } =
-    await pdfDocument.getMetadata();
+  let { info, metadata, contentDispositionFilename, contentLength } = await pdfDocument.getMetadata();
 
   if (!contentLength) {
     const { length } = await pdfDocument.getDownloadInfo();
@@ -33,7 +32,7 @@ async function docProperties(pdfDocument) {
     filesize: contentLength,
     filename: contentDispositionFilename || getPdfFilenameFromUrl(url),
     metadata: metadata?.getRaw(),
-    authors: metadata?.get("dc:creator"),
+    authors: metadata?.get('dc:creator'),
     numPages: pdfDocument.numPages,
     URL: url,
   };
@@ -41,10 +40,7 @@ async function docProperties(pdfDocument) {
 
 class GenericScripting {
   constructor(sandboxBundleSrc) {
-    this._ready = loadScript(
-      sandboxBundleSrc,
-      /* removeScriptElement = */ true
-    ).then(() => {
+    this._ready = loadScript(sandboxBundleSrc, /* removeScriptElement = */ true).then(() => {
       return window.pdfjsSandbox.QuickJSSandbox();
     });
   }

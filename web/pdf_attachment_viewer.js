@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { getFilenameFromUrl, PromiseCapability } from "pdfjs-lib";
-import { BaseTreeViewer } from "./base_tree_viewer.js";
-import { waitOnEventOrTimeout } from "./event_utils.js";
+import { getFilenameFromUrl, PromiseCapability } from '../src/pdf.js';
+import { BaseTreeViewer } from './base_tree_viewer.js';
+import { waitOnEventOrTimeout } from './event_utils.js';
 
 /**
  * @typedef {Object} PDFAttachmentViewerOptions
@@ -37,10 +37,7 @@ class PDFAttachmentViewer extends BaseTreeViewer {
     super(options);
     this.downloadManager = options.downloadManager;
 
-    this.eventBus._on(
-      "fileattachmentannotation",
-      this.#appendAttachment.bind(this)
-    );
+    this.eventBus._on('fileattachmentannotation', this.#appendAttachment.bind(this));
   }
 
   reset(keepRenderedCapability = false) {
@@ -70,7 +67,7 @@ class PDFAttachmentViewer extends BaseTreeViewer {
 
       await waitOnEventOrTimeout({
         target: this.eventBus,
-        name: "annotationlayerrendered",
+        name: 'annotationlayerrendered',
         delay: 1000,
       });
 
@@ -80,7 +77,7 @@ class PDFAttachmentViewer extends BaseTreeViewer {
     }
     this._pendingDispatchEvent = false;
 
-    this.eventBus.dispatch("attachmentsloaded", {
+    this.eventBus.dispatch('attachmentsloaded', {
       source: this,
       attachmentsCount,
     });
@@ -115,15 +112,12 @@ class PDFAttachmentViewer extends BaseTreeViewer {
     for (const name in attachments) {
       const item = attachments[name];
       const content = item.content,
-        filename = getFilenameFromUrl(
-          item.filename,
-          /* onlyStripPath = */ true
-        );
+        filename = getFilenameFromUrl(item.filename, /* onlyStripPath = */ true);
 
-      const div = document.createElement("div");
-      div.className = "treeItem";
+      const div = document.createElement('div');
+      div.className = 'treeItem';
 
-      const element = document.createElement("a");
+      const element = document.createElement('a');
       this._bindLink(element, { content, filename });
       element.textContent = this._normalizeTextContent(filename);
 

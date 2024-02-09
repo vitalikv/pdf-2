@@ -22,9 +22,9 @@
 // eslint-disable-next-line max-len
 /** @typedef {import("./textaccessibility.js").TextAccessibilityManager} TextAccessibilityManager */
 
-import { AnnotationLayer } from "pdfjs-lib";
-import { NullL10n } from "./l10n_utils.js";
-import { PresentationModeState } from "./ui_utils.js";
+import { AnnotationLayer } from '../src/pdf.js';
+import { NullL10n } from './l10n_utils.js';
+import { PresentationModeState } from './ui_utils.js';
 
 /**
  * @typedef {Object} AnnotationLayerBuilderOptions
@@ -57,7 +57,7 @@ class AnnotationLayerBuilder {
     linkService,
     downloadManager,
     annotationStorage = null,
-    imageResourcesPath = "",
+    imageResourcesPath = '',
     renderForms = true,
     l10n = NullL10n,
     enableScripting = false,
@@ -92,7 +92,7 @@ class AnnotationLayerBuilder {
    * @returns {Promise<void>} A promise that is resolved when rendering of the
    *   annotations is complete.
    */
-  async render(viewport, intent = "display") {
+  async render(viewport, intent = 'display') {
     if (this.div) {
       if (this._cancelled || !this.annotationLayer) {
         return;
@@ -116,8 +116,8 @@ class AnnotationLayerBuilder {
 
     // Create an annotation layer div and render the annotations
     // if there is at least one annotation.
-    const div = (this.div = document.createElement("div"));
-    div.className = "annotationLayer";
+    const div = (this.div = document.createElement('div'));
+    div.className = 'annotationLayer';
     this.pageDiv.append(div);
 
     if (annotations.length === 0) {
@@ -152,13 +152,10 @@ class AnnotationLayerBuilder {
       this.#updatePresentationModeState(PresentationModeState.FULLSCREEN);
     }
     if (!this.#onPresentationModeChanged) {
-      this.#onPresentationModeChanged = evt => {
+      this.#onPresentationModeChanged = (evt) => {
         this.#updatePresentationModeState(evt.state);
       };
-      this._eventBus?._on(
-        "presentationmodechanged",
-        this.#onPresentationModeChanged
-      );
+      this._eventBus?._on('presentationmodechanged', this.#onPresentationModeChanged);
     }
   }
 
@@ -166,10 +163,7 @@ class AnnotationLayerBuilder {
     this._cancelled = true;
 
     if (this.#onPresentationModeChanged) {
-      this._eventBus?._off(
-        "presentationmodechanged",
-        this.#onPresentationModeChanged
-      );
+      this._eventBus?._off('presentationmodechanged', this.#onPresentationModeChanged);
       this.#onPresentationModeChanged = null;
     }
   }
@@ -197,7 +191,7 @@ class AnnotationLayerBuilder {
         return;
     }
     for (const section of this.div.childNodes) {
-      if (section.hasAttribute("data-internal-link")) {
+      if (section.hasAttribute('data-internal-link')) {
         continue;
       }
       section.inert = disableFormElements;

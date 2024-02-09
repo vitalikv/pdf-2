@@ -20,8 +20,8 @@
 // eslint-disable-next-line max-len
 /** @typedef {import("./text_accessibility.js").TextAccessibilityManager} TextAccessibilityManager */
 
-import { normalizeUnicode, renderTextLayer, updateTextLayer } from "pdfjs-lib";
-import { removeNullCharacters } from "./ui_utils.js";
+import { normalizeUnicode, renderTextLayer, updateTextLayer } from '../src/pdf.js';
+import { removeNullCharacters } from './ui_utils.js';
 
 /**
  * @typedef {Object} TextLayerBuilderOptions
@@ -46,12 +46,7 @@ class TextLayerBuilder {
 
   #textContentSource = null;
 
-  constructor({
-    highlighter = null,
-    accessibilityManager = null,
-    isOffscreenCanvasSupported = true,
-    enablePermissions = false,
-  }) {
+  constructor({ highlighter = null, accessibilityManager = null, isOffscreenCanvasSupported = true, enablePermissions = false }) {
     this.textContentItemsStr = [];
     this.renderingDone = false;
     this.textDivs = [];
@@ -62,16 +57,16 @@ class TextLayerBuilder {
     this.isOffscreenCanvasSupported = isOffscreenCanvasSupported;
     this.#enablePermissions = enablePermissions === true;
 
-    this.div = document.createElement("div");
-    this.div.className = "textLayer";
+    this.div = document.createElement('div');
+    this.div.className = 'textLayer';
     this.hide();
   }
 
   #finishRendering() {
     this.renderingDone = true;
 
-    const endOfContent = document.createElement("div");
-    endOfContent.className = "endOfContent";
+    const endOfContent = document.createElement('div');
+    endOfContent.className = 'endOfContent';
     this.div.append(endOfContent);
 
     this.#bindMouse();
@@ -182,49 +177,44 @@ class TextLayerBuilder {
   #bindMouse() {
     const { div } = this;
 
-    div.addEventListener("mousedown", evt => {
-      const end = div.querySelector(".endOfContent");
+    div.addEventListener('mousedown', (evt) => {
+      const end = div.querySelector('.endOfContent');
       if (!end) {
         return;
       }
-      if (typeof PDFJSDev === "undefined" || !PDFJSDev.test("MOZCENTRAL")) {
+      if (typeof PDFJSDev === 'undefined' || !PDFJSDev.test('MOZCENTRAL')) {
         // On non-Firefox browsers, the selection will feel better if the height
         // of the `endOfContent` div is adjusted to start at mouse click
         // location. This avoids flickering when the selection moves up.
         // However it does not work when selection is started on empty space.
         let adjustTop = evt.target !== div;
-        if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
-          adjustTop &&=
-            getComputedStyle(end).getPropertyValue("-moz-user-select") !==
-            "none";
+        if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC')) {
+          adjustTop &&= getComputedStyle(end).getPropertyValue('-moz-user-select') !== 'none';
         }
         if (adjustTop) {
           const divBounds = div.getBoundingClientRect();
           const r = Math.max(0, (evt.pageY - divBounds.top) / divBounds.height);
-          end.style.top = (r * 100).toFixed(2) + "%";
+          end.style.top = (r * 100).toFixed(2) + '%';
         }
       }
-      end.classList.add("active");
+      end.classList.add('active');
     });
 
-    div.addEventListener("mouseup", () => {
-      const end = div.querySelector(".endOfContent");
+    div.addEventListener('mouseup', () => {
+      const end = div.querySelector('.endOfContent');
       if (!end) {
         return;
       }
-      if (typeof PDFJSDev === "undefined" || !PDFJSDev.test("MOZCENTRAL")) {
-        end.style.top = "";
+      if (typeof PDFJSDev === 'undefined' || !PDFJSDev.test('MOZCENTRAL')) {
+        end.style.top = '';
       }
-      end.classList.remove("active");
+      end.classList.remove('active');
     });
 
-    div.addEventListener("copy", event => {
+    div.addEventListener('copy', (event) => {
       if (!this.#enablePermissions) {
         const selection = document.getSelection();
-        event.clipboardData.setData(
-          "text/plain",
-          removeNullCharacters(normalizeUnicode(selection.toString()))
-        );
+        event.clipboardData.setData('text/plain', removeNullCharacters(normalizeUnicode(selection.toString())));
       }
       event.preventDefault();
       event.stopPropagation();

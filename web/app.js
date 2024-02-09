@@ -51,29 +51,29 @@ import {
   shadow,
   UnexpectedResponseException,
   version,
-} from 'pdfjs-lib';
+} from '../src/pdf.js';
 import { AppOptions, OptionKind } from './app_options.js';
 import { AutomationEventBus, EventBus } from './event_utils.js';
 import { LinkTarget, PDFLinkService } from './pdf_link_service.js';
-import { AnnotationEditorParams } from 'web-annotation_editor_params';
+import { AnnotationEditorParams } from './annotation_editor_params.js';
 import { OverlayManager } from './overlay_manager.js';
 import { PasswordPrompt } from './password_prompt.js';
-import { PDFAttachmentViewer } from 'web-pdf_attachment_viewer';
-import { PDFCursorTools } from 'web-pdf_cursor_tools';
-import { PDFDocumentProperties } from 'web-pdf_document_properties';
-import { PDFFindBar } from 'web-pdf_find_bar';
+import { PDFAttachmentViewer } from './pdf_attachment_viewer.js';
+import { PDFCursorTools } from './pdf_cursor_tools.js';
+import { PDFDocumentProperties } from './pdf_document_properties.js';
+import { PDFFindBar } from './pdf_find_bar.js';
 import { PDFFindController } from './pdf_find_controller.js';
 import { PDFHistory } from './pdf_history.js';
-import { PDFLayerViewer } from 'web-pdf_layer_viewer';
-import { PDFOutlineViewer } from 'web-pdf_outline_viewer';
-import { PDFPresentationMode } from 'web-pdf_presentation_mode';
+import { PDFLayerViewer } from './pdf_layer_viewer.js';
+import { PDFOutlineViewer } from './pdf_outline_viewer.js';
+import { PDFPresentationMode } from './pdf_presentation_mode.js';
 import { PDFRenderingQueue } from './pdf_rendering_queue.js';
 import { PDFScriptingManager } from './pdf_scripting_manager.js';
-import { PDFSidebar } from 'web-pdf_sidebar';
-import { PDFThumbnailViewer } from 'web-pdf_thumbnail_viewer';
+import { PDFSidebar } from './pdf_sidebar.js';
+import { PDFThumbnailViewer } from './pdf_thumbnail_viewer.js';
 import { PDFViewer } from './pdf_viewer.js';
-import { SecondaryToolbar } from 'web-secondary_toolbar';
-import { Toolbar } from 'web-toolbar';
+import { SecondaryToolbar } from './secondary_toolbar.js';
+import { Toolbar } from './toolbar.js';
 import { ViewHistory } from './view_history.js';
 
 const FORCE_PAGES_LOADED_TIMEOUT = 10000; // ms
@@ -2101,7 +2101,7 @@ async function loadFakeWorker() {
   GlobalWorkerOptions.workerSrc ||= AppOptions.get('workerSrc');
 
   if (typeof PDFJSDev === 'undefined') {
-    window.pdfjsWorker = await import('pdfjs/pdf.worker.js');
+    window.pdfjsWorker = await import('../src/pdf.worker.js');
     return;
   }
   await loadScript(PDFWorker.workerSrc);

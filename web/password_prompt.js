@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { PasswordResponses, PromiseCapability } from "pdfjs-lib";
+import { PasswordResponses, PromiseCapability } from '../src/pdf.js';
 
 /**
  * @typedef {Object} PasswordPromptOptions
@@ -52,9 +52,9 @@ class PasswordPrompt {
     this._isViewerEmbedded = isViewerEmbedded;
 
     // Attach the event listeners.
-    this.submitButton.addEventListener("click", this.#verify.bind(this));
-    this.cancelButton.addEventListener("click", this.close.bind(this));
-    this.input.addEventListener("keydown", e => {
+    this.submitButton.addEventListener('click', this.#verify.bind(this));
+    this.cancelButton.addEventListener('click', this.close.bind(this));
+    this.input.addEventListener('keydown', (e) => {
       if (e.keyCode === /* Enter = */ 13) {
         this.#verify();
       }
@@ -62,7 +62,7 @@ class PasswordPrompt {
 
     this.overlayManager.register(this.dialog, /* canForceClose = */ true);
 
-    this.dialog.addEventListener("close", this.#cancel.bind(this));
+    this.dialog.addEventListener('close', this.#cancel.bind(this));
   }
 
   async open() {
@@ -78,15 +78,12 @@ class PasswordPrompt {
       throw ex;
     }
 
-    const passwordIncorrect =
-      this.#reason === PasswordResponses.INCORRECT_PASSWORD;
+    const passwordIncorrect = this.#reason === PasswordResponses.INCORRECT_PASSWORD;
 
     if (!this._isViewerEmbedded || passwordIncorrect) {
       this.input.focus();
     }
-    this.label.textContent = await this.l10n.get(
-      `password_${passwordIncorrect ? "invalid" : "label"}`
-    );
+    this.label.textContent = await this.l10n.get(`password_${passwordIncorrect ? 'invalid' : 'label'}`);
   }
 
   async close() {
@@ -103,7 +100,7 @@ class PasswordPrompt {
   }
 
   #cancel() {
-    this.#invokeCallback(new Error("PasswordPrompt cancelled."));
+    this.#invokeCallback(new Error('PasswordPrompt cancelled.'));
     this.#activeCapability.resolve();
   }
 
@@ -112,7 +109,7 @@ class PasswordPrompt {
       return; // Ensure that the callback is only invoked once.
     }
     this.close();
-    this.input.value = "";
+    this.input.value = '';
 
     this.#updateCallback(password);
     this.#updateCallback = null;

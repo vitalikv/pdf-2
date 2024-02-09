@@ -24,8 +24,8 @@
 // eslint-disable-next-line max-len
 /** @typedef {import("../src/display/annotation_layer.js").AnnotationLayer} AnnotationLayer */
 
-import { AnnotationEditorLayer } from "pdfjs-lib";
-import { NullL10n } from "./l10n_utils.js";
+import { AnnotationEditorLayer } from '../src/pdf.js';
+import { NullL10n } from './l10n_utils.js';
 
 /**
  * @typedef {Object} AnnotationEditorLayerBuilderOptions
@@ -61,8 +61,8 @@ class AnnotationEditorLayerBuilder {
    * @param {PageViewport} viewport
    * @param {string} intent (default value is 'display')
    */
-  async render(viewport, intent = "display") {
-    if (intent !== "display") {
+  async render(viewport, intent = 'display') {
+    if (intent !== 'display') {
       return;
     }
 
@@ -78,8 +78,8 @@ class AnnotationEditorLayerBuilder {
     }
 
     // Create an AnnotationEditor layer div
-    const div = (this.div = document.createElement("div"));
-    div.className = "annotationEditorLayer";
+    const div = (this.div = document.createElement('div'));
+    div.className = 'annotationEditorLayer';
     div.tabIndex = 0;
     div.hidden = true;
     this.pageDiv.append(div);

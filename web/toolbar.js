@@ -13,18 +13,10 @@
  * limitations under the License.
  */
 
-import {
-  animationStarted,
-  DEFAULT_SCALE,
-  DEFAULT_SCALE_VALUE,
-  MAX_SCALE,
-  MIN_SCALE,
-  noContextMenuHandler,
-  toggleCheckedBtn,
-} from "./ui_utils.js";
-import { AnnotationEditorType } from "pdfjs-lib";
+import { animationStarted, DEFAULT_SCALE, DEFAULT_SCALE_VALUE, MAX_SCALE, MIN_SCALE, noContextMenuHandler, toggleCheckedBtn } from './ui_utils.js';
+import { AnnotationEditorType } from '../src/pdf.js';
 
-const PAGE_NUMBER_LOADING_INDICATOR = "visiblePageIsLoading";
+const PAGE_NUMBER_LOADING_INDICATOR = 'visiblePageIsLoading';
 
 /**
  * @typedef {Object} ToolbarOptions
@@ -60,51 +52,45 @@ class Toolbar {
     this.eventBus = eventBus;
     this.l10n = l10n;
     this.buttons = [
-      { element: options.previous, eventName: "previouspage" },
-      { element: options.next, eventName: "nextpage" },
-      { element: options.zoomIn, eventName: "zoomin" },
-      { element: options.zoomOut, eventName: "zoomout" },
-      { element: options.print, eventName: "print" },
-      { element: options.download, eventName: "download" },
+      { element: options.previous, eventName: 'previouspage' },
+      { element: options.next, eventName: 'nextpage' },
+      { element: options.zoomIn, eventName: 'zoomin' },
+      { element: options.zoomOut, eventName: 'zoomout' },
+      { element: options.print, eventName: 'print' },
+      { element: options.download, eventName: 'download' },
       {
         element: options.editorFreeTextButton,
-        eventName: "switchannotationeditormode",
+        eventName: 'switchannotationeditormode',
         eventDetails: {
           get mode() {
             const { classList } = options.editorFreeTextButton;
-            return classList.contains("toggled")
-              ? AnnotationEditorType.NONE
-              : AnnotationEditorType.FREETEXT;
+            return classList.contains('toggled') ? AnnotationEditorType.NONE : AnnotationEditorType.FREETEXT;
           },
         },
       },
       {
         element: options.editorInkButton,
-        eventName: "switchannotationeditormode",
+        eventName: 'switchannotationeditormode',
         eventDetails: {
           get mode() {
             const { classList } = options.editorInkButton;
-            return classList.contains("toggled")
-              ? AnnotationEditorType.NONE
-              : AnnotationEditorType.INK;
+            return classList.contains('toggled') ? AnnotationEditorType.NONE : AnnotationEditorType.INK;
           },
         },
       },
       {
         element: options.editorStampButton,
-        eventName: "switchannotationeditormode",
+        eventName: 'switchannotationeditormode',
         eventDetails: {
           get mode() {
             const { classList } = options.editorStampButton;
-            return classList.contains("toggled")
-              ? AnnotationEditorType.NONE
-              : AnnotationEditorType.STAMP;
+            return classList.contains('toggled') ? AnnotationEditorType.NONE : AnnotationEditorType.STAMP;
           },
         },
       },
     ];
-    if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
-      this.buttons.push({ element: options.openFile, eventName: "openfile" });
+    if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC')) {
+      this.buttons.push({ element: options.openFile, eventName: 'openfile' });
     }
     this.items = {
       numPages: options.numPages,
@@ -152,7 +138,7 @@ class Toolbar {
     this.updateLoadingIndicatorState();
 
     // Reset the Editor buttons too, since they're document specific.
-    this.eventBus.dispatch("toolbarreset", { source: this });
+    this.eventBus.dispatch('toolbarreset', { source: this });
   }
 
   #bindListeners(options) {
@@ -161,49 +147,46 @@ class Toolbar {
 
     // The buttons within the toolbar.
     for (const { element, eventName, eventDetails } of this.buttons) {
-      element.addEventListener("click", evt => {
+      element.addEventListener('click', (evt) => {
         if (eventName !== null) {
           this.eventBus.dispatch(eventName, { source: this, ...eventDetails });
         }
       });
     }
     // The non-button elements within the toolbar.
-    pageNumber.addEventListener("click", function () {
+    pageNumber.addEventListener('click', function () {
       this.select();
     });
-    pageNumber.addEventListener("change", function () {
-      self.eventBus.dispatch("pagenumberchanged", {
+    pageNumber.addEventListener('change', function () {
+      self.eventBus.dispatch('pagenumberchanged', {
         source: self,
         value: this.value,
       });
     });
 
-    scaleSelect.addEventListener("change", function () {
-      if (this.value === "custom") {
+    scaleSelect.addEventListener('change', function () {
+      if (this.value === 'custom') {
         return;
       }
-      self.eventBus.dispatch("scalechanged", {
+      self.eventBus.dispatch('scalechanged', {
         source: self,
         value: this.value,
       });
     });
     // Here we depend on browsers dispatching the "click" event *after* the
     // "change" event, when the <select>-element changes.
-    scaleSelect.addEventListener("click", function (evt) {
+    scaleSelect.addEventListener('click', function (evt) {
       const target = evt.target;
       // Remove focus when an <option>-element was *clicked*, to improve the UX
       // for mouse users (fixes bug 1300525 and issue 4923).
-      if (
-        this.value === self.pageScaleValue &&
-        target.tagName.toUpperCase() === "OPTION"
-      ) {
+      if (this.value === self.pageScaleValue && target.tagName.toUpperCase() === 'OPTION') {
         this.blur();
       }
     });
     // Suppress context menus for some controls.
     scaleSelect.oncontextmenu = noContextMenuHandler;
 
-    this.eventBus._on("localized", () => {
+    this.eventBus._on('localized', () => {
       this.#wasLocalized = true;
       this.#adjustScaleWidth();
       this.#updateUIState(true);
@@ -212,24 +195,10 @@ class Toolbar {
     this.#bindEditorToolsListener(options);
   }
 
-  #bindEditorToolsListener({
-    editorFreeTextButton,
-    editorFreeTextParamsToolbar,
-    editorInkButton,
-    editorInkParamsToolbar,
-    editorStampButton,
-  }) {
+  #bindEditorToolsListener({ editorFreeTextButton, editorFreeTextParamsToolbar, editorInkButton, editorInkParamsToolbar, editorStampButton }) {
     const editorModeChanged = ({ mode }) => {
-      toggleCheckedBtn(
-        editorFreeTextButton,
-        mode === AnnotationEditorType.FREETEXT,
-        editorFreeTextParamsToolbar
-      );
-      toggleCheckedBtn(
-        editorInkButton,
-        mode === AnnotationEditorType.INK,
-        editorInkParamsToolbar
-      );
+      toggleCheckedBtn(editorFreeTextButton, mode === AnnotationEditorType.FREETEXT, editorFreeTextParamsToolbar);
+      toggleCheckedBtn(editorInkButton, mode === AnnotationEditorType.INK, editorInkParamsToolbar);
       toggleCheckedBtn(editorStampButton, mode === AnnotationEditorType.STAMP);
 
       const isDisable = mode === AnnotationEditorType.DISABLE;
@@ -237,9 +206,9 @@ class Toolbar {
       editorInkButton.disabled = isDisable;
       editorStampButton.disabled = isDisable;
     };
-    this.eventBus._on("annotationeditormodechanged", editorModeChanged);
+    this.eventBus._on('annotationeditormodechanged', editorModeChanged);
 
-    this.eventBus._on("toolbarreset", evt => {
+    this.eventBus._on('toolbarreset', (evt) => {
       if (evt.source === this) {
         editorModeChanged({ mode: AnnotationEditorType.DISABLE });
       }
@@ -255,10 +224,10 @@ class Toolbar {
 
     if (resetNumPages) {
       if (this.hasPageLabels) {
-        items.pageNumber.type = "text";
+        items.pageNumber.type = 'text';
       } else {
-        items.pageNumber.type = "number";
-        this.l10n.get("of_pages", { pagesCount }).then(msg => {
+        items.pageNumber.type = 'number';
+        this.l10n.get('of_pages', { pagesCount }).then((msg) => {
           items.numPages.textContent = msg;
         });
       }
@@ -267,7 +236,7 @@ class Toolbar {
 
     if (this.hasPageLabels) {
       items.pageNumber.value = this.pageLabel;
-      this.l10n.get("page_of_pages", { pageNumber, pagesCount }).then(msg => {
+      this.l10n.get('page_of_pages', { pageNumber, pagesCount }).then((msg) => {
         items.numPages.textContent = msg;
       });
     } else {
@@ -280,23 +249,21 @@ class Toolbar {
     items.zoomOut.disabled = pageScale <= MIN_SCALE;
     items.zoomIn.disabled = pageScale >= MAX_SCALE;
 
-    this.l10n
-      .get("page_scale_percent", { scale: Math.round(pageScale * 10000) / 100 })
-      .then(msg => {
-        let predefinedValueFound = false;
-        for (const option of items.scaleSelect.options) {
-          if (option.value !== pageScaleValue) {
-            option.selected = false;
-            continue;
-          }
-          option.selected = true;
-          predefinedValueFound = true;
+    this.l10n.get('page_scale_percent', { scale: Math.round(pageScale * 10000) / 100 }).then((msg) => {
+      let predefinedValueFound = false;
+      for (const option of items.scaleSelect.options) {
+        if (option.value !== pageScaleValue) {
+          option.selected = false;
+          continue;
         }
-        if (!predefinedValueFound) {
-          items.customScaleOption.textContent = msg;
-          items.customScaleOption.selected = true;
-        }
-      });
+        option.selected = true;
+        predefinedValueFound = true;
+      }
+      if (!predefinedValueFound) {
+        items.customScaleOption.textContent = msg;
+        items.customScaleOption.selected = true;
+      }
+    });
   }
 
   updateLoadingIndicatorState(loading = false) {
@@ -313,21 +280,19 @@ class Toolbar {
     const { items, l10n } = this;
 
     const predefinedValuesPromise = Promise.all([
-      l10n.get("page_scale_auto"),
-      l10n.get("page_scale_actual"),
-      l10n.get("page_scale_fit"),
-      l10n.get("page_scale_width"),
+      l10n.get('page_scale_auto'),
+      l10n.get('page_scale_actual'),
+      l10n.get('page_scale_fit'),
+      l10n.get('page_scale_width'),
     ]);
     await animationStarted;
 
     const style = getComputedStyle(items.scaleSelect);
-    const scaleSelectWidth = parseFloat(
-      style.getPropertyValue("--scale-select-width")
-    );
+    const scaleSelectWidth = parseFloat(style.getPropertyValue('--scale-select-width'));
 
     // The temporary canvas is used to measure text length in the DOM.
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d", { alpha: false });
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { alpha: false });
     ctx.font = `${style.fontSize} ${style.fontFamily}`;
 
     let maxWidth = 0;
@@ -343,7 +308,7 @@ class Toolbar {
 
     if (maxWidth > scaleSelectWidth) {
       const container = items.scaleSelect.parentNode;
-      container.style.setProperty("--scale-select-width", `${maxWidth}px`);
+      container.style.setProperty('--scale-select-width', `${maxWidth}px`);
     }
     // Zeroing the width and height cause Firefox to release graphics resources
     // immediately, which can greatly reduce memory consumption.

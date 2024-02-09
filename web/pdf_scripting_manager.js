@@ -15,8 +15,8 @@
 
 /** @typedef {import("./event_utils").EventBus} EventBus */
 
-import { apiPageLayoutToViewerModes, RenderingStates } from "./ui_utils.js";
-import { PromiseCapability, shadow } from "pdfjs-lib";
+import { apiPageLayoutToViewerModes, RenderingStates } from './ui_utils.js';
+import { PromiseCapability, shadow } from '../src/pdf.js';
 
 /**
  * @typedef {Object} PDFScriptingManagerOptions
@@ -54,14 +54,9 @@ class PDFScriptingManager {
   /**
    * @param {PDFScriptingManagerOptions} options
    */
-  constructor({
-    eventBus,
-    sandboxBundleSrc = null,
-    externalServices = null,
-    docProperties = null,
-  }) {
+  constructor({ eventBus, sandboxBundleSrc = null, externalServices = null, docProperties = null }) {
     this.#eventBus = eventBus;
-    if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC || CHROME")) {
+    if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC || CHROME')) {
       this.#sandboxBundleSrc = sandboxBundleSrc;
     }
     this.#externalServices = externalServices;
@@ -104,23 +99,23 @@ class PDFScriptingManager {
       return;
     }
 
-    this._internalEvents.set("updatefromsandbox", event => {
+    this._internalEvents.set('updatefromsandbox', (event) => {
       if (event?.source === window) {
         this.#updateFromSandbox(event.detail);
       }
     });
-    this._internalEvents.set("dispatcheventinsandbox", event => {
+    this._internalEvents.set('dispatcheventinsandbox', (event) => {
       this.#scripting?.dispatchEventInSandbox(event.detail);
     });
 
-    this._internalEvents.set("pagechanging", ({ pageNumber, previous }) => {
+    this._internalEvents.set('pagechanging', ({ pageNumber, previous }) => {
       if (pageNumber === previous) {
         return; // The current page didn't change.
       }
       this.#dispatchPageClose(previous);
       this.#dispatchPageOpen(pageNumber);
     });
-    this._internalEvents.set("pagerendered", ({ pageNumber }) => {
+    this._internalEvents.set('pagerendered', ({ pageNumber }) => {
       if (!this._pageOpenPending.has(pageNumber)) {
         return; // No pending "PageOpen" event for the newly rendered page.
       }
@@ -129,12 +124,12 @@ class PDFScriptingManager {
       }
       this.#dispatchPageOpen(pageNumber);
     });
-    this._internalEvents.set("pagesdestroy", async () => {
+    this._internalEvents.set('pagesdestroy', async () => {
       await this.#dispatchPageClose(this.#pdfViewer.currentPageNumber);
 
       await this.#scripting?.dispatchEventInSandbox({
-        id: "doc",
-        name: "WillClose",
+        id: 'doc',
+        name: 'WillClose',
       });
 
       this.#closeCapability?.resolve();
@@ -163,7 +158,7 @@ class PDFScriptingManager {
         },
       });
 
-      this.#eventBus.dispatch("sandboxcreated", { source: this });
+      this.#eventBus.dispatch('sandboxcreated', { source: this });
     } catch (error) {
       console.error(`setDocument: "${error.message}".`);
 
@@ -172,13 +167,10 @@ class PDFScriptingManager {
     }
 
     await this.#scripting?.dispatchEventInSandbox({
-      id: "doc",
-      name: "Open",
+      id: 'doc',
+      name: 'Open',
     });
-    await this.#dispatchPageOpen(
-      this.#pdfViewer.currentPageNumber,
-      /* initialize = */ true
-    );
+    await this.#dispatchPageOpen(this.#pdfViewer.currentPageNumber, /* initialize = */ true);
 
     // Defer this slightly, to ensure that scripting is *fully* initialized.
     Promise.resolve().then(() => {
@@ -190,29 +182,29 @@ class PDFScriptingManager {
 
   async dispatchWillSave() {
     return this.#scripting?.dispatchEventInSandbox({
-      id: "doc",
-      name: "WillSave",
+      id: 'doc',
+      name: 'WillSave',
     });
   }
 
   async dispatchDidSave() {
     return this.#scripting?.dispatchEventInSandbox({
-      id: "doc",
-      name: "DidSave",
+      id: 'doc',
+      name: 'DidSave',
     });
   }
 
   async dispatchWillPrint() {
     return this.#scripting?.dispatchEventInSandbox({
-      id: "doc",
-      name: "WillPrint",
+      id: 'doc',
+      name: 'WillPrint',
     });
   }
 
   async dispatchDidPrint() {
     return this.#scripting?.dispatchEventInSandbox({
-      id: "doc",
-      name: "DidPrint",
+      id: 'doc',
+      name: 'DidPrint',
     });
   }
 
@@ -228,80 +220,79 @@ class PDFScriptingManager {
    * @private
    */
   get _internalEvents() {
-    return shadow(this, "_internalEvents", new Map());
+    return shadow(this, '_internalEvents', new Map());
   }
 
   /**
    * @private
    */
   get _pageOpenPending() {
-    return shadow(this, "_pageOpenPending", new Set());
+    return shadow(this, '_pageOpenPending', new Set());
   }
 
   /**
    * @private
    */
   get _visitedPages() {
-    return shadow(this, "_visitedPages", new Map());
+    return shadow(this, '_visitedPages', new Map());
   }
 
   async #updateFromSandbox(detail) {
     const pdfViewer = this.#pdfViewer;
     // Ignore some events, see below, that don't make sense in PresentationMode.
-    const isInPresentationMode =
-      pdfViewer.isInPresentationMode || pdfViewer.isChangingPresentationMode;
+    const isInPresentationMode = pdfViewer.isInPresentationMode || pdfViewer.isChangingPresentationMode;
 
     const { id, siblings, command, value } = detail;
     if (!id) {
       switch (command) {
-        case "clear":
+        case 'clear':
           console.clear();
           break;
-        case "error":
+        case 'error':
           console.error(value);
           break;
-        case "layout":
+        case 'layout':
           if (!isInPresentationMode) {
             const modes = apiPageLayoutToViewerModes(value);
             pdfViewer.spreadMode = modes.spreadMode;
           }
           break;
-        case "page-num":
+        case 'page-num':
           pdfViewer.currentPageNumber = value + 1;
           break;
-        case "print":
+        case 'print':
           await pdfViewer.pagesPromise;
-          this.#eventBus.dispatch("print", { source: this });
+          this.#eventBus.dispatch('print', { source: this });
           break;
-        case "println":
+        case 'println':
           console.log(value);
           break;
-        case "zoom":
+        case 'zoom':
           if (!isInPresentationMode) {
             pdfViewer.currentScaleValue = value;
           }
           break;
-        case "SaveAs":
-          this.#eventBus.dispatch("download", { source: this });
+        case 'SaveAs':
+          this.#eventBus.dispatch('download', { source: this });
           break;
-        case "FirstPage":
+        case 'FirstPage':
           pdfViewer.currentPageNumber = 1;
           break;
-        case "LastPage":
+        case 'LastPage':
           pdfViewer.currentPageNumber = pdfViewer.pagesCount;
           break;
-        case "NextPage":
+        case 'NextPage':
           pdfViewer.nextPage();
           break;
-        case "PrevPage":
+        case 'PrevPage':
           pdfViewer.previousPage();
           break;
-        case "ZoomViewIn":
+        case 'ZoomViewIn':
           if (!isInPresentationMode) {
             pdfViewer.increaseScale();
           }
           break;
-        case "ZoomViewOut":
+        case 'ZoomViewOut':
           if (!isInPresentationMode) {
             pdfViewer.decreaseScale();
           }
@@ -318,11 +309,9 @@ class PDFScriptingManager {
 
     const ids = siblings ? [id, ...siblings] : [id];
     for (const elementId of ids) {
-      const element = document.querySelector(
-        `[data-element-id="${elementId}"]`
-      );
+      const element = document.querySelector(`[data-element-id="${elementId}"]`);
       if (element) {
-        element.dispatchEvent(new CustomEvent("updatefromsandbox", { detail }));
+        element.dispatchEvent(new CustomEvent('updatefromsandbox', { detail }));
       } else {
         // The element hasn't been rendered yet, use the AnnotationStorage.
         this.#pdfDocument?.annotationStorage.setValue(elementId, detail);
@@ -350,16 +339,14 @@ class PDFScriptingManager {
 
     const actionsPromise = (async () => {
       // Avoid sending, and thus serializing, the `actions` data more than once.
-      const actions = await (!visitedPages.has(pageNumber)
-        ? pageView.pdfPage?.getJSActions()
-        : null);
+      const actions = await (!visitedPages.has(pageNumber) ? pageView.pdfPage?.getJSActions() : null);
       if (pdfDocument !== this.#pdfDocument) {
         return; // The document was closed while the actions resolved.
       }
 
       await this.#scripting?.dispatchEventInSandbox({
-        id: "page",
-        name: "PageOpen",
+        id: 'page',
+        name: 'PageOpen',
         pageNumber,
         actions,
       });
@@ -390,8 +377,8 @@ class PDFScriptingManager {
     }
 
     await this.#scripting?.dispatchEventInSandbox({
-      id: "page",
-      name: "PageClose",
+      id: 'page',
+      name: 'PageClose',
       pageNumber,
     });
   }
@@ -400,7 +387,7 @@ class PDFScriptingManager {
     this.#destroyCapability = new PromiseCapability();
 
     if (this.#scripting) {
-      throw new Error("#initScripting: Scripting already exists.");
+      throw new Error('#initScripting: Scripting already exists.');
     }
     return this.#externalServices.createScripting({
       sandboxBundleSrc: this.#sandboxBundleSrc,
@@ -417,7 +404,7 @@ class PDFScriptingManager {
     if (this.#closeCapability) {
       await Promise.race([
         this.#closeCapability.promise,
-        new Promise(resolve => {
+        new Promise((resolve) => {
           // Avoid the scripting/sandbox-destruction hanging indefinitely.
           setTimeout(resolve, 1000);
         }),

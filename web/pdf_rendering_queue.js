@@ -18,8 +18,8 @@
 // eslint-disable-next-line max-len
 /** @typedef {import("./pdf_thumbnail_viewer").PDFThumbnailViewer} PDFThumbnailViewer */
 
-import { RenderingCancelledException } from "pdfjs-lib";
-import { RenderingStates } from "./ui_utils.js";
+import { RenderingCancelledException } from '../src/pdf.js';
+import { RenderingStates } from './ui_utils.js';
 
 const CLEANUP_TIMEOUT = 30000;
 
@@ -37,8 +37,8 @@ class PDFRenderingQueue {
     this.printing = false;
     this.isThumbnailViewEnabled = false;
 
-    if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
-      Object.defineProperty(this, "hasViewer", {
+    if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC')) {
+      Object.defineProperty(this, 'hasViewer', {
         value: () => !!this.pdfViewer,
       });
     }
@@ -80,10 +80,7 @@ class PDFRenderingQueue {
       return;
     }
     // No pages needed rendering, so check thumbnails.
-    if (
-      this.isThumbnailViewEnabled &&
-      this.pdfThumbnailViewer?.forceRendering()
-    ) {
+    if (this.isThumbnailViewEnabled && this.pdfThumbnailViewer?.forceRendering()) {
       return;
     }
 
@@ -197,7 +194,7 @@ class PDFRenderingQueue {
           .finally(() => {
             this.renderHighestPriority();
           })
-          .catch(reason => {
+          .catch((reason) => {
             if (reason instanceof RenderingCancelledException) {
               return;
             }

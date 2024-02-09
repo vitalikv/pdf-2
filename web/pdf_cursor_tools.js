@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { AnnotationEditorType, shadow } from "pdfjs-lib";
-import { CursorTool, PresentationModeState } from "./ui_utils.js";
-import { GrabToPan } from "./grab_to_pan.js";
+import { AnnotationEditorType, shadow } from '../src/pdf.js';
+import { CursorTool, PresentationModeState } from './ui_utils.js';
+import { GrabToPan } from './grab_to_pan.js';
 
 /**
  * @typedef {Object} PDFCursorToolsOptions
@@ -98,14 +98,14 @@ class PDFCursorTools {
     // in order to prevent setting it to an invalid state.
     this.#active = tool;
 
-    this.eventBus.dispatch("cursortoolchanged", {
+    this.eventBus.dispatch('cursortoolchanged', {
       source: this,
       tool,
     });
   }
 
   #addEventListeners() {
-    this.eventBus._on("switchcursortool", evt => {
+    this.eventBus._on('switchcursortool', (evt) => {
       this.switchTool(evt.tool);
     });
 
@@ -121,17 +121,13 @@ class PDFCursorTools {
     const enableActive = () => {
       const prevActive = this.#prevActive;
 
-      if (
-        prevActive !== null &&
-        annotationEditorMode === AnnotationEditorType.NONE &&
-        presentationModeState === PresentationModeState.NORMAL
-      ) {
+      if (prevActive !== null && annotationEditorMode === AnnotationEditorType.NONE && presentationModeState === PresentationModeState.NORMAL) {
         this.#prevActive = null;
         this.switchTool(prevActive);
       }
     };
 
-    this.eventBus._on("secondarytoolbarreset", evt => {
+    this.eventBus._on('secondarytoolbarreset', (evt) => {
       if (this.#prevActive !== null) {
         annotationEditorMode = AnnotationEditorType.NONE;
         presentationModeState = PresentationModeState.NORMAL;
@@ -140,7 +136,7 @@ class PDFCursorTools {
       }
     });
 
-    this.eventBus._on("annotationeditormodechanged", ({ mode }) => {
+    this.eventBus._on('annotationeditormodechanged', ({ mode }) => {
       annotationEditorMode = mode;
 
       if (mode === AnnotationEditorType.NONE) {
@@ -150,7 +146,7 @@ class PDFCursorTools {
       }
     });
 
-    this.eventBus._on("presentationmodechanged", ({ state }) => {
+    this.eventBus._on('presentationmodechanged', ({ state }) => {
       presentationModeState = state;
 
       if (state === PresentationModeState.NORMAL) {
@@ -167,7 +163,7 @@ class PDFCursorTools {
   get _handTool() {
     return shadow(
       this,
-      "_handTool",
+      '_handTool',
       new GrabToPan({
         element: this.container,
       })

@@ -13,17 +13,12 @@
  * limitations under the License.
  */
 
-import {
-  normalizeWheelEventDelta,
-  PresentationModeState,
-  ScrollMode,
-  SpreadMode,
-} from "./ui_utils.js";
-import { AnnotationEditorType } from "pdfjs-lib";
+import { normalizeWheelEventDelta, PresentationModeState, ScrollMode, SpreadMode } from './ui_utils.js';
+import { AnnotationEditorType } from '../src/pdf.js';
 
 const DELAY_BEFORE_HIDING_CONTROLS = 3000; // in ms
-const ACTIVE_SELECTOR = "pdfPresentationMode";
-const CONTROLS_SELECTOR = "pdfPresentationModeControls";
+const ACTIVE_SELECTOR = 'pdfPresentationMode';
+const CONTROLS_SELECTOR = 'pdfPresentationModeControls';
 const MOUSE_SCROLL_COOLDOWN_TIME = 50; // in ms
 const PAGE_SWITCH_THRESHOLD = 0.1;
 
@@ -83,14 +78,8 @@ class PDFPresentationMode {
       annotationEditorMode: null,
     };
 
-    if (
-      pdfViewer.spreadMode !== SpreadMode.NONE &&
-      !(pdfViewer.pageViewsReady && pdfViewer.hasEqualPageSizes)
-    ) {
-      console.warn(
-        "Ignoring Spread modes when entering PresentationMode, " +
-          "since the document may contain varying page sizes."
-      );
+    if (pdfViewer.spreadMode !== SpreadMode.NONE && !(pdfViewer.pageViewsReady && pdfViewer.hasEqualPageSizes)) {
+      console.warn('Ignoring Spread modes when entering PresentationMode, ' + 'since the document may contain varying page sizes.');
       this.#args.spreadMode = pdfViewer.spreadMode;
     }
     if (pdfViewer.annotationEditorMode !== AnnotationEditorType.DISABLE) {
@@ -109,10 +98,7 @@ class PDFPresentationMode {
   }
 
   get active() {
-    return (
-      this.#state === PresentationModeState.CHANGING ||
-      this.#state === PresentationModeState.FULLSCREEN
-    );
+    return this.#state === PresentationModeState.CHANGING || this.#state === PresentationModeState.FULLSCREEN;
   }
 
   #mouseWheel(evt) {
@@ -126,17 +112,11 @@ class PDFPresentationMode {
     const storedTime = this.mouseScrollTimeStamp;
 
     // If we've already switched page, avoid accidentally switching again.
-    if (
-      currentTime > storedTime &&
-      currentTime - storedTime < MOUSE_SCROLL_COOLDOWN_TIME
-    ) {
+    if (currentTime > storedTime && currentTime - storedTime < MOUSE_SCROLL_COOLDOWN_TIME) {
       return;
     }
     // If the scroll direction changed, reset the accumulated scroll delta.
-    if (
-      (this.mouseScrollDelta > 0 && delta < 0) ||
-      (this.mouseScrollDelta < 0 && delta > 0)
-    ) {
+    if ((this.mouseScrollDelta > 0 && delta < 0) || (this.mouseScrollDelta < 0 && delta > 0)) {
       this.#resetMouseScrollState();
     }
     this.mouseScrollDelta += delta;
@@ -144,10 +124,7 @@ class PDFPresentationMode {
     if (Math.abs(this.mouseScrollDelta) >= PAGE_SWITCH_THRESHOLD) {
       const totalDelta = this.mouseScrollDelta;
       this.#resetMouseScrollState();
-      const success =
-        totalDelta > 0
-          ? this.pdfViewer.previousPage()
-          : this.pdfViewer.nextPage();
+      const success = totalDelta > 0 ? this.pdfViewer.previousPage() : this.pdfViewer.nextPage();
       if (success) {
         this.mouseScrollTimeStamp = currentTime;
       }
@@ -157,7 +134,7 @@ class PDFPresentationMode {
   #notifyStateChange(state) {
     this.#state = state;
 
-    this.eventBus.dispatch("presentationmodechanged", { source: this, state });
+    this.eventBus.dispatch('presentationmodechanged', { source: this, state });
   }
 
   #enter() {
@@ -172,7 +149,7 @@ class PDFPresentationMode {
         this.pdfViewer.spreadMode = SpreadMode.NONE;
       }
       this.pdfViewer.currentPageNumber = this.#args.pageNumber;
-      this.pdfViewer.currentScaleValue = "page-fit";
+      this.pdfViewer.currentScaleValue = 'page-fit';
 
       if (this.#args.annotationEditorMode !== null) {
         this.pdfViewer.annotationEditorMode = {
@@ -233,10 +210,7 @@ class PDFPresentationMode {
     }
     // Enable clicking of links in presentation mode. Note: only links
     // pointing to destinations in the current PDF document work.
-    if (
-      evt.target.href &&
-      evt.target.parentNode?.hasAttribute("data-internal-link")
-    ) {
+    if (evt.target.href && evt.target.parentNode?.hasAttribute('data-internal-link')) {
       return;
     }
     // Unless an internal link was clicked, advance one page.
@@ -293,7 +267,7 @@ class PDFPresentationMode {
     }
 
     switch (evt.type) {
-      case "touchstart":
+      case 'touchstart':
         this.touchSwipeState = {
           startX: evt.touches[0].pageX,
           startY: evt.touches[0].pageY,
@@ -301,7 +275,7 @@ class PDFPresentationMode {
           endY: evt.touches[0].pageY,
         };
         break;
-      case "touchmove":
+      case 'touchmove':
         if (this.touchSwipeState === null) {
           return;
         }
@@ -311,7 +285,7 @@ class PDFPresentationMode {
         // particular has some sort of swipe gesture in fullscreen mode).
         evt.preventDefault();
         break;
-      case "touchend":
+      case 'touchend':
         if (this.touchSwipeState === null) {
           return;
         }
@@ -319,17 +293,10 @@ class PDFPresentationMode {
         const dx = this.touchSwipeState.endX - this.touchSwipeState.startX;
         const dy = this.touchSwipeState.endY - this.touchSwipeState.startY;
         const absAngle = Math.abs(Math.atan2(dy, dx));
-        if (
-          Math.abs(dx) > SWIPE_MIN_DISTANCE_THRESHOLD &&
-          (absAngle <= SWIPE_ANGLE_THRESHOLD ||
-            absAngle >= Math.PI - SWIPE_ANGLE_THRESHOLD)
-        ) {
+        if (Math.abs(dx) > SWIPE_MIN_DISTANCE_THRESHOLD && (absAngle <= SWIPE_ANGLE_THRESHOLD || absAngle >= Math.PI - SWIPE_ANGLE_THRESHOLD)) {
           // Horizontal swipe.
           delta = dx;
-        } else if (
-          Math.abs(dy) > SWIPE_MIN_DISTANCE_THRESHOLD &&
-          Math.abs(absAngle - Math.PI / 2) <= SWIPE_ANGLE_THRESHOLD
-        ) {
+        } else if (Math.abs(dy) > SWIPE_MIN_DISTANCE_THRESHOLD && Math.abs(absAngle - Math.PI / 2) <= SWIPE_ANGLE_THRESHOLD) {
           // Vertical swipe.
           delta = dy;
         }
@@ -350,27 +317,27 @@ class PDFPresentationMode {
     this.contextMenuBind = this.#contextMenu.bind(this);
     this.touchSwipeBind = this.#touchSwipe.bind(this);
 
-    window.addEventListener("mousemove", this.showControlsBind);
-    window.addEventListener("mousedown", this.mouseDownBind);
-    window.addEventListener("wheel", this.mouseWheelBind, { passive: false });
-    window.addEventListener("keydown", this.resetMouseScrollStateBind);
-    window.addEventListener("contextmenu", this.contextMenuBind);
-    window.addEventListener("touchstart", this.touchSwipeBind);
-    window.addEventListener("touchmove", this.touchSwipeBind);
-    window.addEventListener("touchend", this.touchSwipeBind);
+    window.addEventListener('mousemove', this.showControlsBind);
+    window.addEventListener('mousedown', this.mouseDownBind);
+    window.addEventListener('wheel', this.mouseWheelBind, { passive: false });
+    window.addEventListener('keydown', this.resetMouseScrollStateBind);
+    window.addEventListener('contextmenu', this.contextMenuBind);
+    window.addEventListener('touchstart', this.touchSwipeBind);
+    window.addEventListener('touchmove', this.touchSwipeBind);
+    window.addEventListener('touchend', this.touchSwipeBind);
   }
 
   #removeWindowListeners() {
-    window.removeEventListener("mousemove", this.showControlsBind);
-    window.removeEventListener("mousedown", this.mouseDownBind);
-    window.removeEventListener("wheel", this.mouseWheelBind, {
+    window.removeEventListener('mousemove', this.showControlsBind);
+    window.removeEventListener('mousedown', this.mouseDownBind);
+    window.removeEventListener('wheel', this.mouseWheelBind, {
       passive: false,
     });
-    window.removeEventListener("keydown", this.resetMouseScrollStateBind);
-    window.removeEventListener("contextmenu", this.contextMenuBind);
-    window.removeEventListener("touchstart", this.touchSwipeBind);
-    window.removeEventListener("touchmove", this.touchSwipeBind);
-    window.removeEventListener("touchend", this.touchSwipeBind);
+    window.removeEventListener('keydown', this.resetMouseScrollStateBind);
+    window.removeEventListener('contextmenu', this.contextMenuBind);
+    window.removeEventListener('touchstart', this.touchSwipeBind);
+    window.removeEventListener('touchmove', this.touchSwipeBind);
+    window.removeEventListener('touchend', this.touchSwipeBind);
 
     delete this.showControlsBind;
     delete this.mouseDownBind;
@@ -390,11 +357,11 @@ class PDFPresentationMode {
 
   #addFullscreenChangeListeners() {
     this.fullscreenChangeBind = this.#fullscreenChange.bind(this);
-    window.addEventListener("fullscreenchange", this.fullscreenChangeBind);
+    window.addEventListener('fullscreenchange', this.fullscreenChangeBind);
   }
 
   #removeFullscreenChangeListeners() {
-    window.removeEventListener("fullscreenchange", this.fullscreenChangeBind);
+    window.removeEventListener('fullscreenchange', this.fullscreenChangeBind);
     delete this.fullscreenChangeBind;
   }
 }
